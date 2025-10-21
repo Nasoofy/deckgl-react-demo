@@ -1,8 +1,10 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { DeckGL } from '@deck.gl/react';
 import { Map} from 'react-map-gl/maplibre';
 import { HeatmapLayer } from '@deck.gl/aggregation-layers';
+import './App.css';
 const DATA_URL  =  'https://raw.githubusercontent.com/visgl/deck.gl-data/master/examples/screen-grid/uber-pickup-locations.json';
+
 
 const MAP_STYLE= 'https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json';
 
@@ -17,25 +19,77 @@ const INTIAL = {
 
 
 function App(){
+  const[intensity, setIntensity] = useState(1);
+  const[radius, setRadius] = useState(5);
+  const[threshold,setThreshold] = useState(0.03);
+
   const layers =[
     new HeatmapLayer({
       id: 'heatmapLayer',
       data: DATA_URL,
       getPosition: d => [d[0], d[1]],
-      getWeight: d => 1,
-      radiusPixels: 30,
-      intensity: 1,
-      threshold: 0.83
+      getWeight: d => d[2],
+      radiusPixels: radius,
+      intensity: intensity,
+      threshold: threshold,
     })
   ];
   return (
-    <DeckGL 
-      initialViewState={INTIAL}
-      controller={true}
-      layers={layers}
-    >
-      <Map reuseMaps mapStyle={MAP_STYLE}/>  
-    </DeckGL>
+    <div>
+      <DeckGL
+        initialViewState={INTIAL}
+        controller={true}
+        layers={layers}
+      >
+        <Map reuseMaps mapStyle={MAP_STYLE}/>  
+      </DeckGL>
+      
+      <div className="title-overlap">
+        NYC Uber Pickups Heatmap
+      </div>
+      
+      <div className="control-panel">
+        <h2>Uber pickup in NYC</h2>
+        <p>From:April 2014 to Septemeber 2014.</p>
+      
+        <div className="sliders">
+          <label>
+            Intensity: {intensity.toFixed(2)}
+            <input
+              type="range"
+              min="0"
+              max="5"
+              step="0.01"
+              value={intensity}
+              onChange={e => setIntensity(Number(e.target.value))}
+            />
+          </label>
+        
+          <label>
+            Radius: {radius}
+            <input
+              type="range"
+              min="1"
+              max="100"
+              value={radius}
+              onChange={e => setRadius(Number(e.target.value))}
+            />
+          </label>
+        
+          <label>
+            Threshold: {threshold.toFixed(2)}
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value={threshold}
+              onChange={e => setThreshold(Number(e.target.value))}
+            />
+          </label>
+        </div>
+      </div>
+    </div>
   );
 }
 export default App;
